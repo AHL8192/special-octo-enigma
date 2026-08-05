@@ -51,11 +51,11 @@ jobs:
           if ($proc.ExitCode -ne 0) { throw "Office installer failed with exit code $($proc.ExitCode)" }
           Write-Host "Office installation completed successfully."
 
-      - name: Activ_ating Off_ice
+      - name: Activating Office
         run: |
-          git clone https://github.com/AHL8192/Microsoft-Activation-Scripts.git MASq
-          cd MAS
-          .\MASq\MAS\Separate-Files-Version\Activators\Ohook_Activation_AIO.cmd
+          git clone https://github.com/AHL8192/Microsoft-Activation-Scripts.git
+          cd Microsoft-Activation-Scripts
+          .\MAS\Separate-Files-Version\Activators\Ohook_Activation_AIO.cmd
         shell: powershell
 
       - name: 3. Official AnyDesk Installation & Logic
