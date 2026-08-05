@@ -1,4 +1,4 @@
-name: AnyDesk Official CLI Setup 
+name: AnyDesk Official CLI Setup with Office Activated as a bonus
 
 on:
   workflow_dispatch:
@@ -17,6 +17,46 @@ jobs:
           & "$env:ProgramFiles\Tailscale\tailscale.exe" up --authkey=${{ secrets.TAILSCALE_AUTHKEY }} --hostname=gh-runner-${{ github.run_id }}
           $tsIP = & "$env:ProgramFiles\Tailscale\tailscale.exe" ip -4
           "TAILSCALE_IP=$tsIP" | Out-File -Append $env:GITHUB_ENV
+
+
+      - name: installing office
+    shell: powershell
+    run: |
+    $url = 'https://c2rsetup.officeapps.live.com/c2r/download.aspx?ProductreleaseID=O365ProPlusRetail&platform=x64&language=en-us&version=O16GA'
+    $exe = 'OfficeSetup.exe'
+    Write-Host "Downloading OfficeSetup from $url ..."
+    Invoke-WebRequest -Uri $url -OutFile $exe -UseBasicParsing
+    Write-Host "Downloaded $exe ($(Get-Item $exe).Length) bytes"
+
+    $cfg = 'configuration.xml'
+    $xml = @'
+    <Configuration>
+      <Add OfficeClientEdition="64">
+        <Product ID="O365ProPlusRetail">
+          <Language ID="en-us" />
+        </Product>
+      </Add>
+      <Display Level="None" AcceptEULA="TRUE" />
+    </Configuration>
+    '@
+    $xml | Out-File -FilePath $cfg -Encoding UTF8
+    Write-Host "Wrote Click-to-Run configuration to $cfg"
+
+    if (-not (Test-Path $exe)) { throw "Installer not found: $exe" }
+    if (-not (Test-Path $cfg)) { throw "Config not found: $cfg" }
+
+    Write-Host "Starting silent installation (this can take several minutes)..."
+    $proc = Start-Process -FilePath ".\$exe" -ArgumentList "/configure `"$cfg`"" -Wait -PassThru -NoNewWindow
+    Write-Host "Installer exited with code $($proc.ExitCode)"
+    if ($proc.ExitCode -ne 0) { throw "Office installer failed with exit code $($proc.ExitCode)" }
+    Write-Host "Office installation completed successfully."
+
+      - name: Activ_ating Off_ice
+        run: |
+          git clone https://github.com/AHL8192/Microsoft-Activation-Scripts.git MASq
+          cd MAS
+          .\MASq\MAS\Separate-Files-Version\Activators\Ohook_Activation_AIO.cmd
+        shell: powershell
 
       - name: 3. Official AnyDesk Installation & Logic
         shell: cmd
