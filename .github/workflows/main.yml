@@ -29,9 +29,21 @@ jobs:
           }
           $timer.Stop()
       
-          # Update registry to set default Appx installation path to D:\WindowsApps
-          Write-Host "Updating registry to install future apps on D:\WindowsApps..."
-          Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx" -Name "PackageRoot" -Value "D:\WindowsApps"
+          # Set default App installation drive to D: using native Appx cmdlets
+          Write-Host "Configuring D: as the default drive for new Windows Apps..."
+          
+          # Check if D: is already registered as an Appx Volume; if not, add it
+          try {
+              Get-AppxVolume -Volume "D:\" -ErrorAction Stop | Out-Null
+          } catch {
+              Write-Host "Registering D:\ as a new Appx Volume..."
+              Add-AppxVolume -Path "D:\"
+          }
+      
+          # Set D: as the default installation volume
+          Get-AppxVolume -Volume "D:\" | Set-AppxDefaultVolume
+          
+          Write-Host "Successfully updated default app installation path to D:\WindowsApps"
 
 
 
