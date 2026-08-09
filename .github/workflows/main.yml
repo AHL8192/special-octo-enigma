@@ -12,40 +12,6 @@ jobs:
       - name: Optimize Windows Runner Performance
         shell: powershell
         run: |
-                # Disable Windows Defender Real-time scanning
-                Set-MpPreference -DisableRealtimeMonitoring $true
-                
-                # Disable Windows Search Indexing (WSearch)
-                Stop-Service -Name WSearch -ErrorAction SilentlyContinue
-                Set-Service -Name WSearch -StartupType Disabled -ErrorAction SilentlyContinue
-                
-                # Disable Superfetch/SysMain (unnecessary on ephemeral cloud VMs)
-                Stop-Service -Name SysMain -ErrorAction SilentlyContinue
-
-                # OOSU STARTED
-                # 1. Define temporary file paths
-                $OOSU_exe = "$env:TEMP\OOSU10.exe"
-                $OOSU_cfg = "$env:TEMP\ooshutup10.cfg"
-                
-                # 2. Download the latest O&O ShutUp10++ executable
-                Invoke-WebRequest -Uri "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe" -OutFile $OOSU_exe
-                
-                # 3. Download a configuration file 
-                # (This uses a popular community 'Recommended Settings' config, but you can swap the URL for your own)
-                Invoke-WebRequest -Uri "https://raw.githubusercontent.com/ChrisTitusTech/winutil/main/config/ooshutup10_recommended.cfg" -OutFile $OOSU_cfg
-                
-                # 4. Execute silently and wait for completion
-                Write-Host "Applying O&O ShutUp10 privacy configurations..."
-                Start-Process -FilePath $OOSU_exe -ArgumentList "`"$OOSU_cfg`" /quiet /nosrp" -Wait -NoNewWindow
-                
-                Write-Host "Configurations applied successfully."        Set-Service -Name SysMain -StartupType Disabled -ErrorAction SilentlyContinue
-
-
-
-      
-      - name: Optimize Windows Runner Performance
-        shell: powershell
-        run: |
           # Disable Windows Defender Real-time scanning
           Set-MpPreference -DisableRealtimeMonitoring $true
           
