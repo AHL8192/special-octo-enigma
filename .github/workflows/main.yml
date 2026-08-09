@@ -24,16 +24,20 @@ jobs:
           choco install winrar -y
           "C:\Program Files\WinRAR" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: Download and Install qBittorrent
+
+      - name: Download and Install qBittorrent to D Drive
         shell: pwsh
         run: |
                 # 1. Download
                 $releasesUrl = "https://api.github.com/repos/qbittorrent/qBittorrent/releases/latest"
                 $releaseInfo = Invoke-RestMethod -Uri $releasesUrl
-                $installerAsset = $releaseInfo.assets | Where-Object { $_.name -match "x64_setup\.exe$" }
+                
+                # Added 'Select-Object -First 1' to handle multiple x64 installers
+                $installerAsset = $releaseInfo.assets | Where-Object { $_.name -match "x64_setup\.exe$" } | Select-Object -First 1
+                
                 $outputFile = "$env:TEMP\qbittorrent_setup.exe"
                 
-                Write-Host "Downloading qBittorrent..."
+                Write-Host "Downloading qBittorrent from: $($installerAsset.browser_download_url)"
                 Invoke-WebRequest -Uri $installerAsset.browser_download_url -OutFile $outputFile
                 
                 # 2. Install (Using cmd.exe to prevent PowerShell from auto-quoting the /D parameter)
@@ -48,6 +52,7 @@ jobs:
                 } else {
                     throw "Failed: qBittorrent executable not found at expected path."
                 }
+
 
       - name: installing office
         shell: powershell
