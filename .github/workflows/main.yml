@@ -9,21 +9,22 @@ jobs:
     steps:
 
       
-      - name: Optimize Windows Runner Performance
+      
+      - name: Optimize and Apply OOSU10
         shell: powershell
         run: |
-          # Disable Windows Defender Real-time scanning
-          Set-MpPreference -DisableRealtimeMonitoring $true
-          
-          # Disable Windows Search Indexing (WSearch)
-          Stop-Service -Name WSearch -ErrorAction SilentlyContinue
-          Set-Service -Name WSearch -StartupType Disabled -ErrorAction SilentlyContinue
-          
-          # Disable Superfetch/SysMain (unnecessary on ephemeral cloud VMs)
-          Stop-Service -Name SysMain -ErrorAction SilentlyContinue
-          Set-Service -Name SysMain -StartupType Disabled -ErrorAction SilentlyContinue
-
-            #OOSU STARTED
+            # Disable Windows Defender Real-time scanning
+            Set-MpPreference -DisableRealtimeMonitoring $true
+            
+            # Disable Windows Search Indexing (WSearch)
+            Stop-Service -Name WSearch -ErrorAction SilentlyContinue
+            Set-Service -Name WSearch -StartupType Disabled -ErrorAction SilentlyContinue
+            
+            # Disable Superfetch/SysMain (unnecessary on ephemeral cloud VMs)
+            Stop-Service -Name SysMain -ErrorAction SilentlyContinue
+            Set-Service -Name SysMain -StartupType Disabled -ErrorAction SilentlyContinue
+            
+            # OOSU STARTED
             # 1. Define temporary file paths
             $OOSU_exe = "$env:TEMP\OOSU10.exe"
             $OOSU_cfg = "$env:TEMP\ooshutup10.cfg"
@@ -31,15 +32,22 @@ jobs:
             # 2. Download the latest O&O ShutUp10++ executable
             Invoke-WebRequest -Uri "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe" -OutFile $OOSU_exe
             
-            # 3. Download a configuration file 
-            # (This uses a popular community 'Recommended Settings' config, but you can swap the URL for your own)
-            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/ChrisTitusTech/winutil/main/config/ooshutup10_recommended.cfg" -OutFile $OOSU_cfg
+            # 3. Create the configuration file dynamically (No external dependencies)
+            $oosuConfigContent = @"
+            ############################################################################
+            # This file was created with O&O ShutUp10++
+            # Recommended settings string
+            P001 + P002 + P003 + P004 + P005 + P006 + P008 + P026 + P027 + P028 + P064 + P065 + P066 + P067 + P070 + P069 + P009 - P010 - P015 - P068 - P016 - A001 + A002 + A003 + A004 + A006 + A005 + P007 + P036 + P025 + P033 + P023 + P056 + P057 - P012 - P034 - P013 - P035 - P062 - P063 - P081 - P047 - P019 - P048 - P049 - P020 - P037 - P011 - P038 - P050 - P051 - P018 - P039 - P021 - P040 - P022 - P041 - P014 - P042 - P052 - P053 - P054 - P055 - P029 - P043 - P030 - P044 - P031 - P045 - P032 - P046 - P058 - P059 - P060 - P061 - P024 - S001 + S002 + S003 + S008 - E001 + E002 + E003 + E008 + E007 + E010 + E011 + E012 + E009 - E004 - E005 - E013 - E014 - E006 - Y001 + Y002 + Y003 + Y004 + Y005 + Y006 + Y007 + C012 + C002 + C013 + C007 + C008 + C009 + C010 + C011 + C014 + C015 + L001 + L003 + L004 - L005 - U001 + U004 + U005 + U006 + U007 + W001 + W011 +
+            "@
+            
+            Set-Content -Path $OOSU_cfg -Value $oosuConfigContent
             
             # 4. Execute silently and wait for completion
             Write-Host "Applying O&O ShutUp10 privacy configurations..."
             Start-Process -FilePath $OOSU_exe -ArgumentList "`"$OOSU_cfg`" /quiet /nosrp" -Wait -NoNewWindow
             
             Write-Host "Configurations applied successfully."
+
       
       
       
