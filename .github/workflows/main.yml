@@ -35,8 +35,8 @@ jobs:
       - name: Install PotPlayer and AIMP
         shell: powershell
         run: |
-            winget install --id XP8BSBGQW2DKS0 -e --silent
-            winget install --id 9PCLLLH15SMT -e --silent
+            winget install --id XP8BSBGQW2DKS0 -e --silent --accept-source-agreements --accept-package-agreements
+            winget install --id 9PCLLLH15SMT -e --silent --accept-source-agreements --accept-package-agreements
 
       
       - name: Optimize and Apply OOSU10
