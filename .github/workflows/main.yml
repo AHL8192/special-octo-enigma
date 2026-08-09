@@ -1,4 +1,4 @@
-name: AnyDesk Official CLI Setup with Office Activated and Winrar and Qbittorrent as a bonus
+name: AnyDesk Official CLI Setup ++
 
 on:
   workflow_dispatch:
