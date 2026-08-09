@@ -10,6 +10,40 @@ jobs:
 
       
       
+      - name: Install Microsoft Store and change default app drive to D:
+        shell: powershell
+        run: |
+          # Trigger Microsoft Store installation
+          Write-Host "Triggering Microsoft Store installation..."
+          wsreset -i
+      
+          # Wait for the installation to finish (max 2 minutes)
+          $timeout = 120
+          $timer = [Diagnostics.Stopwatch]::StartNew()
+          
+          while ($timer.Elapsed.TotalSeconds -lt $timeout) {
+              if (Get-AppxPackage -AllUsers -Name "*Microsoft.WindowsStore*") {
+                  Write-Host "Microsoft Store is successfully installed."
+                  break
+              }
+              Write-Host "Waiting for installation to complete... ($([math]::Round($timer.Elapsed.TotalSeconds))s elapsed)"
+              Start-Sleep -Seconds 5
+          }
+          $timer.Stop()
+      
+          # Update registry to set default Appx installation path to D:\WindowsApps
+          Write-Host "Updating registry to install future apps on D:\WindowsApps..."
+          Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx" -Name "PackageRoot" -Value "D:\WindowsApps"
+
+
+
+      - name: Install PotPlayer and AIMP
+        shell: powershell
+        run: |
+            winget install XP8BSBGQW2DKS0 -y
+            winget install 9PCLLLH15SMT -y
+
+      
       - name: Optimize and Apply OOSU10
         shell: powershell
         run: |
