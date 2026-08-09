@@ -7,10 +7,8 @@ jobs:
   run-anydesk:
     runs-on: windows-latest
     steps:
-
       
-      
-      - name: Install Microsoft Store and change default app drive to D:
+      - name: Add Store
         shell: powershell
         run: |
           # Trigger Microsoft Store installation
