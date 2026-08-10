@@ -3,6 +3,10 @@ name: AnyDesk Official CLI Setup ++
 on:
   workflow_dispatch:
     inputs:
+      audio:
+        description: 'Install Scream Audio Driver'
+        type: boolean
+        default: true
       store:
         description: 'Add Microsoft Store'
         type: boolean
@@ -46,6 +50,13 @@ jobs:
           "TAILSCALE_IP=$tsIP" | Out-File -Append $env:GITHUB_ENV
 
       
+      - name: Add Scream Audio Driver
+        shell: powershell
+        if: ${{ inputs.audio }}
+        run: |
+          # put something here.
+          
+
       - name: Add Store
         shell: powershell
         if: ${{ inputs.store }}
