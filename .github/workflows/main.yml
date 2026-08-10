@@ -2,13 +2,39 @@ name: AnyDesk Official CLI Setup ++
 
 on:
   workflow_dispatch:
+    inputs:
+      store:
+        description: 'Add Microsoft Store'
+        type: boolean
+        default: true
+      media:
+        description: 'Add PotPlayer and AIMP'
+        type: boolean
+        default: true
+      optimize:
+        description: 'Optimize windows performance'
+        type: boolean
+        default: true
+      rar:
+        description: 'Add WinRAR'
+        type: boolean
+        default: true
+      qbit:
+        description: 'Add qbittorrent'
+        type: boolean
+        default: true
+      office:
+        description: 'Add Microsoft Office'
+        type: boolean
+        default: true
 
 jobs:
   run-anydesk:
     runs-on: windows-latest
     steps:
 
-      - name: 1. Install & Connect Tailscale
+
+      - name: 1. (MAIN STEP) Install & Connect Tailscale
         shell: powershell
         run: |
           $tsUrl = "https://pkgs.tailscale.com/stable/tailscale-setup-1.92.3-amd64.msi"
@@ -22,6 +48,7 @@ jobs:
       
       - name: Add Store
         shell: powershell
+        if: ${{ inputs.store }}
         run: |
           # Trigger Microsoft Store installation
           Write-Host "Triggering Microsoft Store installation..."
@@ -46,6 +73,7 @@ jobs:
 
       - name: Install PotPlayer and AIMP
         shell: powershell
+        if: ${{ inputs.media }}
         run: |
             winget install --id XP8BSBGQW2DKS0 -e --silent --accept-source-agreements --accept-package-agreements
             winget install --id 9PCLLLH15SMT -e --silent --accept-source-agreements --accept-package-agreements
@@ -53,6 +81,7 @@ jobs:
       
       - name: Optimize and Apply OOSU10
         shell: powershell
+        if: ${{ inputs.optimize }}
         run: |
             # Disable Windows Defender Real-time scanning
             Set-MpPreference -DisableRealtimeMonitoring $true
@@ -96,6 +125,7 @@ jobs:
     
 
       - name: Install WinRAR via Chocolatey
+        if: ${{ inputs.rar }}
         run: |
           choco install winrar -y
           "C:\Program Files\WinRAR" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
@@ -103,6 +133,7 @@ jobs:
 
       - name: Download and Install qBittorrent to D Drive
         shell: pwsh
+        if: ${{ inputs.qbit }}
         run: |
                 # 1. Download
                 $releasesUrl = "https://api.github.com/repos/qbittorrent/qBittorrent/releases/latest"
@@ -132,6 +163,7 @@ jobs:
 
       - name: installing office
         shell: powershell
+        if: ${{ inputs.office }}
         run: |
           $url = 'https://c2rsetup.officeapps.live.com/c2r/download.aspx?ProductreleaseID=O365ProPlusRetail&platform=x64&language=en-us&version=O16GA'
           $exe = 'OfficeSetup.exe'
@@ -163,13 +195,14 @@ jobs:
           Write-Host "Office installation completed successfully."
 
       - name: Activating Office
+        if: ${{ inputs.office }}
         run: |
           git clone https://github.com/AHL8192/Microsoft-Activation-Scripts.git
           cd Microsoft-Activation-Scripts
           .\MAS\Separate-Files-Version\Activators\Ohook_Activation_AIO.cmd
         shell: powershell
 
-      - name: 3. Official AnyDesk Installation & Logic
+      - name: 2. (MAIN STEP) Official AnyDesk Installation & Logic
         shell: cmd
         run: |
           echo [INFO] Downloading Official AnyDesk.exe...
@@ -211,11 +244,11 @@ jobs:
           
           echo [SUCCESS] Valid ID found: %ID%
           echo [INFO] Setting password for Full Access...
-          echo ahl8192 | "%adPath%" --set-password _full_access
+          echo MR.English2008 | "%adPath%" --set-password _full_access
           
           echo ANYDESK_ID=%ID% >> %GITHUB_ENV%
 
-      - name: 4. Final Status & Keep Alive
+      - name: 3. (MAIN STEP) Final Status & Keep Alive
         shell: powershell
         run: |
           $endTime = (Get-Date).AddHours(6)
@@ -223,7 +256,7 @@ jobs:
           Write-Host "ANYDESK READY"
           Write-Host "ID: $env:ANYDESK_ID"
           Write-Host "User: runneradmin"
-          Write-Host "Password: ahl8192"
+          Write-Host "Password: MR.English2008"
           Write-Host "========================================"
           
           
