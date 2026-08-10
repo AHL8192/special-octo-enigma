@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       audio:
-        description: 'Install Scream Audio Driver'
+        description: 'Install VB-Cable Audio Driver'
         type: boolean
         default: true
       store:
@@ -50,12 +50,46 @@ jobs:
           "TAILSCALE_IP=$tsIP" | Out-File -Append $env:GITHUB_ENV
 
       
-      - name: Add Scream Audio Driver
+      - name: Add VB-Cable Audio Driver
         shell: powershell
         if: ${{ inputs.audio }}
         run: |
-          # put something here.
+          $url = "https://download.vb-audio.com/Download_CABLE/VBCABLE_Driver_Pack45.zip"
+          $zipPath = "$env:TEMP\VBCABLE_Driver_Pack45.zip"
+          $extractPath = "$env:TEMP\VBCABLE"
           
+          # 1. Download the ZIP
+          Write-Host "Downloading VB-Cable..."
+          Invoke-WebRequest -Uri $url -OutFile $zipPath
+          
+          # 2. Extract the ZIP
+          Write-Host "Extracting ZIP..."
+          Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
+          Set-Location $extractPath
+          
+          # 3. Trust the publisher certificate to prevent Windows Security prompts
+          Write-Host "Trusting VB-Audio signature..."
+          $sig = Get-AuthenticodeSignature ".\VBCABLE_Setup_x64.exe"
+          if ($sig.SignerCertificate) {
+              $store = New-Object System.Security.Cryptography.X509Certificates.X509Store "TrustedPublisher", "LocalMachine"
+              $store.Open("ReadWrite")
+              $store.Add($sig.SignerCertificate)
+              $store.Close()
+              Write-Host "Certificate added to TrustedPublisher."
+          } else {
+              Write-Warning "Could not extract certificate. Installation might hang if Windows prompts for trust."
+          }
+          
+          # 4. Run the installer silently (-i = install, -h = hidden)
+          Write-Host "Installing VB-Cable driver..."
+          $process = Start-Process -FilePath ".\VBCABLE_Setup_x64.exe" -ArgumentList "-i", "-h" -Wait -PassThru
+          
+          if ($process.ExitCode -eq 0) {
+              Write-Host "VB-Cable Installation completed successfully!"
+          } else {
+              Write-Error "Installation exited with code $($process.ExitCode)."
+              exit 1
+          }
 
       - name: Add Store
         shell: powershell
