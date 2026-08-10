@@ -7,8 +7,16 @@ on:
         description: 'Install VB-Cable Audio Driver'
         type: boolean
         default: true
+      dark:
+        description: 'Dark Mode'
+        type: boolean
+        default: true
       store:
         description: 'Add Microsoft Store'
+        type: boolean
+        default: true
+      vscode:
+        description: 'Add vscode'
         type: boolean
         default: true
       media:
@@ -91,6 +99,79 @@ jobs:
               exit 1
           }
 
+
+
+      - name: Light Mode
+        shell: powershell
+        if: ${{ !inputs.dark }}
+        run: |
+          # code
+          # 1. Define direct GitHub URL (MUST be raw.githubusercontent.com link)
+          $url = "https://raw.githubusercontent.com/AHL8192/special-octo-enigma/refs/heads/main/Wallpapers/Light.jpg"
+
+          # 2. Set temporary local save path
+          $outputPath = "$env:TEMP\github_wallpaper.jpg"
+
+          # 3. Download the image
+          Invoke-WebRequest -Uri $url -OutFile $outputPath
+
+          # 4. Define Win32 API signature
+          $code = @"
+          using System;
+          using System.Runtime.InteropServices;
+
+          public class Wallpaper {
+              [DllImport("user32.dll", CharSet = CharSet.Auto)]
+              public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+          }
+          "@
+
+          # 5. Compile the C# definition
+          Add-Type -TypeDefinition $code -ErrorAction SilentlyContinue
+
+          # 6. Apply the wallpaper
+          # 0x0014 = SPI_SETDESKWALLPAPER
+          # 0x03 = SPIF_UPDATEINIFILE (0x01) | SPIF_SENDCHANGE (0x02)
+          [Wallpaper]::SystemParametersInfo(0x0014, 0, $outputPath, 0x03)
+
+
+      - name: Dark Mode
+        shell: powershell
+        if: ${{ inputs.dark }}
+        run: |
+          Set-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize' -Name 'AppsUseLightTheme' -Value 0 -Type Dword
+          Set-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize' -Name 'SystemUsesLightTheme' -Value 0 -Type Dword
+          Stop-Process -Name "explorer" -Force
+
+          # Set Custom Wallpaper
+          # 1. Define direct GitHub URL (MUST be raw.githubusercontent.com link)
+          $url = "https://raw.githubusercontent.com/AHL8192/special-octo-enigma/refs/heads/main/Wallpapers/Dark.jpg"
+
+          # 2. Set temporary local save path
+          $outputPath = "$env:TEMP\github_wallpaper.jpg"
+
+          # 3. Download the image
+          Invoke-WebRequest -Uri $url -OutFile $outputPath
+
+          # 4. Define Win32 API signature
+          $code = @"
+          using System;
+          using System.Runtime.InteropServices;
+
+          public class Wallpaper {
+              [DllImport("user32.dll", CharSet = CharSet.Auto)]
+              public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+          }
+          "@
+
+          # 5. Compile the C# definition
+          Add-Type -TypeDefinition $code -ErrorAction SilentlyContinue
+
+          # 6. Apply the wallpaper
+          # 0x0014 = SPI_SETDESKWALLPAPER
+          # 0x03 = SPIF_UPDATEINIFILE (0x01) | SPIF_SENDCHANGE (0x02)
+          [Wallpaper]::SystemParametersInfo(0x0014, 0, $outputPath, 0x03)
+
       - name: Add Store
         shell: powershell
         if: ${{ inputs.store }}
@@ -114,6 +195,13 @@ jobs:
           $timer.Stop()
       
 
+
+
+      - name: Install vscode
+        shell: powershell
+        if: ${{ inputs.vscode }}
+        run: |
+            winget install --id Microsoft.VisualStudioCode -e --silent --accept-source-agreements --accept-package-agreements
 
 
       - name: Install PotPlayer and AIMP
