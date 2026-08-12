@@ -39,6 +39,10 @@ on:
         description: 'Add Microsoft Office'
         type: boolean
         default: true
+      vmware:
+        description: 'Add VMware Workstation Pro'
+        type: boolean
+        default: true
 
 jobs:
   run-anydesk:
@@ -172,6 +176,47 @@ jobs:
           # 0x03 = SPIF_UPDATEINIFILE (0x01) | SPIF_SENDCHANGE (0x02)
           [Wallpaper]::SystemParametersInfo(0x0014, 0, $outputPath, 0x03)
 
+      - name: Add VMware
+        shell: powershell
+        if: ${{ inputs.vmware }}
+        run: |
+          # code
+          # Define variables
+          $url = "https://github.com/AHL8192/special-octo-enigma/releases/download/v1.0.1/OpmaticOceanicVersion1.0.1.exe"
+          $exePath = "$env:TEMP\vmware_installer.exe"
+
+          # 1. Download the Executable
+          Write-Host "Downloading VMware Workstation..." -ForegroundColor Cyan
+          Invoke-WebRequest -Uri $url -OutFile $exePath -UserAgent "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+
+          # Validate download size (>10MB ensures it's the actual executable, not an error page)
+          if (-not (Test-Path $exePath) -or (Get-Item $exePath).Length -lt 10MB) {
+              Write-Error "Downloaded file is invalid or too small. Check the download link."
+              exit 1
+          }
+
+          # 2. Perform Silent Installation
+          Write-Host "Starting silent installation..." -ForegroundColor Cyan
+          # VMware-specific arguments for a completely silent install, agreeing to the EULA, and disabling telemetry/auto-updates
+          $installArgs = '/s /v"/qn EULAS_AGREED=1 AUTOSOFTWAREUPDATE=0 DATACOLLECTION=0"'
+
+          $process = Start-Process -FilePath $exePath -ArgumentList $installArgs -Wait -PassThru -NoNewWindow
+
+          if ($process.ExitCode -eq 0) {
+              Write-Host "VMware Workstation installed successfully." -ForegroundColor Green
+          } elseif ($process.ExitCode -eq 3010) {
+              Write-Host "Installation successful, but a system reboot is required." -ForegroundColor Yellow
+          } else {
+              Write-Warning "Installer completed with exit code: $($process.ExitCode)"
+          }
+
+          # 3. Clean up temporary files
+          Write-Host "Cleaning up temporary files..." -ForegroundColor Cyan
+          Remove-Item -Path $exePath -Force -ErrorAction SilentlyContinue
+
+          Write-Host "Setup complete!" -ForegroundColor Green
+
+      
       - name: Add Store
         shell: powershell
         if: ${{ inputs.store }}
