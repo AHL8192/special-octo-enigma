@@ -4,45 +4,45 @@ on:
   workflow_dispatch:
     inputs:
       audio:
-        description: 'Install VB-Cable Audio Driver'
+        description: 'Install VB-Cable Audio Driver (14s)'
         type: boolean
         default: true
       dark:
-        description: 'Dark Mode'
+        description: 'Dark Mode (7s)'
         type: boolean
         default: true
       store:
-        description: 'Add Microsoft Store'
+        description: 'Add Microsoft Store (23s)'
         type: boolean
         default: true
       vscode:
-        description: 'Add vscode'
+        description: 'Add vscode (1m 19s)'
         type: boolean
         default: true
       media:
-        description: 'Add PotPlayer and AIMP'
+        description: 'Add PotPlayer and AIMP (32s)'
         type: boolean
         default: true
       optimize:
-        description: 'Optimize windows performance'
+        description: 'Optimize windows performance (1m 46s)'
         type: boolean
         default: true
       rar:
-        description: 'Add WinRAR'
+        description: 'Add WinRAR (14s)'
         type: boolean
         default: true
       qbit:
-        description: 'Add qbittorrent'
+        description: 'Add qbittorrent (9s)'
         type: boolean
         default: true
       office:
-        description: 'Add Microsoft Office'
+        description: 'Add Microsoft Office (4m 8s)'
         type: boolean
         default: true
       vmware:
-        description: 'Add VMware Workstation Pro'
+        description: 'Add VMware Workstation Pro (6m 24s)'
         type: boolean
-        default: true
+        default: false
 
 jobs:
   run-anydesk:
