@@ -438,18 +438,24 @@ jobs:
 
       - name: Installing Ninite
         shell: powershell
-        if: ${{ inputs.ninite_bool }}
+        if: ${{ inputs.ninite_bool == 'true' }}
+        env:
+          NINITE_URL: ${{ inputs.ninite }}
         run: |
           # Download Ninite Installer
-          $url = "${{ github.event.inputs.ninite_url }}"
-          Write-Host "Downloading Ninite from: $url"
-          Invoke-WebRequest -Uri $url -OutFile "NiniteInstaller.exe"
+          if (-not $env:NINITE_URL) {
+              Write-Error "The URL is empty. Please ensure you trigger this workflow manually (Run workflow) and provide the link."
+              exit 1
+          }
+          
+          Write-Host "Downloading Ninite from: $env:NINITE_URL"
+          Invoke-WebRequest -Uri $env:NINITE_URL -OutFile "NiniteInstaller.exe"
+
           # Launch Ninite (Detached)
           Write-Host "Starting Ninite installer in the background..."
-          # Start-Process without -Wait fires off the executable and immediately moves to the next step
           Start-Process -FilePath ".\NiniteInstaller.exe"
-          # Next Workflow Step
-          echo "This step executes immediately. The Ninite installer is currently running in the background."
+
+          Write-Host "This step executes immediately while Ninite runs in the background."
 
 
       - name: 3. (MAIN STEP) Final Status & Keep Alive
