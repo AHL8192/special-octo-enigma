@@ -47,7 +47,7 @@ on:
         description: 'Add More Apps - Open https://ninite.com/ to choose your apps.'
         type: boolean
         default: false
-      ninite:
+      ninite_url:
         description: 'Give us a direct link to the customized installer from Ninite.'
         required: false
         type: string
@@ -438,9 +438,9 @@ jobs:
 
       - name: Installing Ninite
         shell: powershell
-        if: ${{ inputs.ninite_bool == 'true' }}
+        if: ${{ inputs.ninite_bool }}
         env:
-          NINITE_URL: ${{ inputs.ninite }}
+          NINITE_URL: ${{ inputs.ninite_url }}
         run: |
           # Download Ninite Installer
           if (-not $env:NINITE_URL) {
